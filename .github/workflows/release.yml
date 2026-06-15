@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests
+        run: swift test
+
+      - name: Build release
+        run: swift build -c release
+
+      - name: Create app bundle
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "CopilotNotify" \
+            -srcfolder dist/CopilotNotify.app \
+            -ov -format UDZO \
+            dist/CopilotNotify.dmg
+
+      - name: Create zip
+        run: |
+          cd dist && zip -r CopilotNotify.zip CopilotNotify.app
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/CopilotNotify.dmg
+            dist/CopilotNotify.zip
+          generate_release_notes: true
