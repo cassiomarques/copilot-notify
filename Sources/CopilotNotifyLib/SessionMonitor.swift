@@ -15,6 +15,9 @@ public class SessionMonitor {
     /// Set of session IDs with running copilot processes (updated by tmux mapping).
     private var activeSessions: Set<String> = []
     
+    /// Sessions hidden by the user (won't reappear until process exits and restarts).
+    private var hiddenSessions: Set<String> = []
+    
     public init(pollInterval: TimeInterval = 3.0, sessionStatePath: String? = nil) {
         if let path = sessionStatePath {
             self.sessionStatePath = path
@@ -37,8 +40,9 @@ public class SessionMonitor {
         timer = nil
     }
     
-    /// Dismiss an alert (e.g., user navigated to it).
+    /// Dismiss/hide a session from the list. It won't reappear until its process exits and restarts.
     public func dismiss(sessionId: String) {
+        hiddenSessions.insert(sessionId)
         if alerts.removeValue(forKey: sessionId) != nil {
             onAlertsChanged?(Array(alerts.values))
         }
@@ -58,6 +62,10 @@ public class SessionMonitor {
             
             DispatchQueue.main.async {
                 guard let self = self else { return }
+                // Un-hide sessions whose processes have exited
+                let exitedHidden = self.hiddenSessions.subtracting(activeSessionIds)
+                self.hiddenSessions.subtract(exitedHidden)
+                
                 self.activeSessions = activeSessionIds
                 // Merge mappings back
                 for (id, mapped) in copy {
@@ -82,6 +90,9 @@ public class SessionMonitor {
         let recentCutoff = Date().addingTimeInterval(-86400)
         
         for dirName in sessionDirs {
+            // Skip sessions hidden by the user
+            if hiddenSessions.contains(dirName) { continue }
+            
             let sessionPath = "\(sessionStatePath)/\(dirName)"
             let eventsPath = "\(sessionPath)/events.jsonl"
             let workspacePath = "\(sessionPath)/workspace.yaml"
