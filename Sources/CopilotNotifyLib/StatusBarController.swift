@@ -76,7 +76,7 @@ public class StatusBarController: NSObject {
     /// Update the displayed alerts and refresh the UI.
     public func update(alerts: [SessionAlert]) {
         self.alerts = alerts
-        let needsAttention = alerts.filter { $0.alertType != .working }.count
+        let needsAttention = alerts.filter { $0.alertType == .question || $0.alertType == .approval }.count
         updateIcon(count: needsAttention)
         if popover.isShown {
             updatePopoverContent()
