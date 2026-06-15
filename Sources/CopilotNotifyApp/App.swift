@@ -38,10 +38,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
-        // Wire up: dismiss alert
+        // Wire up: kill session (x button)
         statusBar.onAlertDismissed = { [weak self] alert in
-            self?.sessionMonitor.dismiss(sessionId: alert.id)
-            self?.notificationManager.clearSession(alert.id)
+            let killed = TmuxNavigator.killSession(alert: alert)
+            if killed {
+                self?.sessionMonitor.dismiss(sessionId: alert.id)
+                self?.notificationManager.clearSession(alert.id)
+            } else {
+                // If kill failed (no PID found), just hide it
+                self?.sessionMonitor.dismiss(sessionId: alert.id)
+            }
         }
         
         // Wire up: notification clicked → navigate

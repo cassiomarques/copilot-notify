@@ -4,7 +4,7 @@ import Foundation
 public struct TmuxNavigator {
     
     /// Navigate to the tmux pane for a given alert.
-    /// If paneId is not pre-populated, attempts a live lookup.
+    /// Sends `fg` first to resume any stopped process, then focuses the pane.
     public static func navigate(to alert: SessionAlert) -> Bool {
         var paneId = alert.tmuxPaneId
         
@@ -18,6 +18,9 @@ public struct TmuxNavigator {
             return false
         }
         
+        // Send `fg` to resume any stopped process in that pane (harmless if nothing is stopped)
+        let _ = shell("tmux send-keys -t '\(targetPane)' 'fg' Enter 2>/dev/null")
+        
         // Select the tmux window and pane
         let result = shell("tmux select-window -t '\(targetPane)' 2>&1 && tmux select-pane -t '\(targetPane)' 2>&1")
         print("[CopilotNotify] tmux navigate to \(targetPane): \(result)")
@@ -26,6 +29,36 @@ public struct TmuxNavigator {
         activateITerm()
         
         return true
+    }
+    
+    /// Kill the copilot process for a session.
+    public static func killSession(alert: SessionAlert) -> Bool {
+        // Find the PID of the copilot process for this session
+        guard let pid = findPidForSession(alert: alert) else {
+            print("[CopilotNotify] No PID found to kill for session \(alert.id)")
+            return false
+        }
+        
+        print("[CopilotNotify] Killing copilot process \(pid) for session \(alert.id)")
+        let _ = shell("kill \(pid) 2>/dev/null")
+        return true
+    }
+    
+    /// Find the PID of the copilot process for a given session.
+    private static func findPidForSession(alert: SessionAlert) -> Int? {
+        // Check via lsof for the session.db file
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let sessionDb = "\(home)/.copilot/session-state/\(alert.id)/session.db"
+        let output = shell("lsof -t '\(sessionDb)' 2>/dev/null")
+        
+        // Return the first PID found
+        for line in output.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if let pid = Int(trimmed) {
+                return pid
+            }
+        }
+        return nil
     }
     
     /// Bring iTerm2 to the foreground.

@@ -86,15 +86,16 @@ struct AlertRow: View {
                 
                 Spacer()
                 
-                // Dismiss button
+                // Kill session button
                 Button(action: {
                     onDismiss(alert)
                 }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary.opacity(0.5))
+                    Image(systemName: "trash.circle.fill")
+                        .foregroundColor(.red.opacity(0.6))
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
+                .help("Kill this session")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
