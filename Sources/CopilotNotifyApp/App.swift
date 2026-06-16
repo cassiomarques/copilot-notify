@@ -9,8 +9,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var notificationManager: NotificationManager!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Regular app so windows work normally, but hide dock icon
-        NSApp.setActivationPolicy(.accessory)
+        // Regular app — shows in dock, windows are first-class (tiling WMs see them)
+        NSApp.setActivationPolicy(.regular)
         
         // Setup components
         statusBar = StatusBarController()

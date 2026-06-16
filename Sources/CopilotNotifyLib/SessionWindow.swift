@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// A floating panel that shows the session list. Non-activating so it doesn't steal focus.
+/// A regular window that shows the session list.
 public class SessionWindow {
-    private var panel: NSPanel!
+    private var window: NSWindow!
     private var hostingView: NSHostingView<SessionListView>!
     private var alerts: [SessionAlert] = []
     
@@ -11,44 +11,42 @@ public class SessionWindow {
     public var onAlertDismissed: ((SessionAlert) -> Void)?
     
     public init() {
-        setupPanel()
+        setupWindow()
     }
     
-    private func setupPanel() {
+    private func setupWindow() {
         let contentRect = NSRect(x: 0, y: 0, width: 360, height: 400)
-        panel = NSPanel(
+        window = NSWindow(
             contentRect: contentRect,
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
         
-        panel.title = "Copilot Sessions"
-        panel.level = .normal
-        panel.isFloatingPanel = false
-        panel.hidesOnDeactivate = false
-        panel.collectionBehavior = [.fullScreenAuxiliary]
-        panel.isReleasedWhenClosed = false
-        panel.setFrameAutosaveName("CopilotNotifySessionWindow")
-        panel.minSize = NSSize(width: 300, height: 200)
+        window.title = "Copilot Sessions"
+        window.level = .normal
+        window.hidesOnDeactivate = false
+        window.collectionBehavior = [.fullScreenPrimary, .managed]
+        window.isReleasedWhenClosed = false
+        window.setFrameAutosaveName("CopilotNotifySessionWindow")
+        window.minSize = NSSize(width: 300, height: 200)
         
         // Set initial content
         let view = makeSessionListView()
         hostingView = NSHostingView(rootView: view)
-        panel.contentView = hostingView
+        window.contentView = hostingView
     }
     
     /// Toggle window visibility.
     public func toggle() {
-        if panel.isVisible {
-            panel.orderOut(nil)
+        if window.isVisible {
+            window.orderOut(nil)
         } else {
             NSApp.activate(ignoringOtherApps: true)
-            panel.makeKeyAndOrderFront(nil)
-            // If no saved position, center on screen
-            if !panel.frameAutosaveName.isEmpty,
-               UserDefaults.standard.string(forKey: "NSWindow Frame \(panel.frameAutosaveName)") == nil {
-                panel.center()
+            window.makeKeyAndOrderFront(nil)
+            if !window.frameAutosaveName.isEmpty,
+               UserDefaults.standard.string(forKey: "NSWindow Frame \(window.frameAutosaveName)") == nil {
+                window.center()
             }
         }
     }
@@ -56,7 +54,7 @@ public class SessionWindow {
     /// Show the window.
     public func show() {
         NSApp.activate(ignoringOtherApps: true)
-        panel.makeKeyAndOrderFront(nil)
+        window.makeKeyAndOrderFront(nil)
     }
     
     /// Update the displayed alerts.
