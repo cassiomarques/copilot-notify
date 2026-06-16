@@ -20,6 +20,9 @@ mkdir -p "$DIST_DIR/$BUNDLE_NAME/Contents/Resources"
 
 cp "$BUILD_DIR/CopilotNotify" "$DIST_DIR/$BUNDLE_NAME/Contents/MacOS/"
 cp Resources/Info.plist "$DIST_DIR/$BUNDLE_NAME/Contents/"
+if [ -f Resources/Icons/AppIcon.icns ]; then
+    cp Resources/Icons/AppIcon.icns "$DIST_DIR/$BUNDLE_NAME/Contents/Resources/"
+fi
 
 echo "App bundle created at: $DIST_DIR/$BUNDLE_NAME"
 

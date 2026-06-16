@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4fc3f7"/>
+      <stop offset="50%" style="stop-color:#81d4fa"/>
+      <stop offset="100%" style="stop-color:#4fc3f7"/>
+    </linearGradient>
+    <linearGradient id="bellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd54f"/>
+      <stop offset="100%" style="stop-color:#ffb300"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded square -->
+  <rect x="0" y="0" width="1024" height="1024" rx="220" ry="220" fill="url(#bgGrad)"/>
+  
+  <!-- Left wing -->
+  <path d="M 100 520 
+           Q 150 480, 250 470 
+           Q 350 460, 420 490 
+           Q 440 498, 450 510
+           Q 420 520, 380 525
+           Q 280 540, 180 550
+           Q 130 555, 100 520 Z" 
+        fill="url(#wingGrad)" opacity="0.9"/>
+  
+  <!-- Left wing inner detail -->
+  <path d="M 160 515 
+           Q 200 500, 300 495 
+           Q 370 490, 420 505
+           Q 380 515, 320 520
+           Q 240 530, 160 535 Z" 
+        fill="none" stroke="#b3e5fc" stroke-width="3" opacity="0.6"/>
+
+  <!-- Right wing -->
+  <path d="M 924 520 
+           Q 874 480, 774 470 
+           Q 674 460, 604 490 
+           Q 584 498, 574 510
+           Q 604 520, 644 525
+           Q 744 540, 844 550
+           Q 894 555, 924 520 Z" 
+        fill="url(#wingGrad)" opacity="0.9"/>
+  
+  <!-- Right wing inner detail -->
+  <path d="M 864 515 
+           Q 824 500, 724 495 
+           Q 654 490, 604 505
+           Q 644 515, 704 520
+           Q 784 530, 864 535 Z" 
+        fill="none" stroke="#b3e5fc" stroke-width="3" opacity="0.6"/>
+
+  <!-- Bell body -->
+  <path d="M 420 400 
+           Q 420 320, 512 300 
+           Q 604 320, 604 400 
+           L 620 580 
+           Q 620 620, 580 630 
+           L 444 630 
+           Q 404 620, 404 580 Z" 
+        fill="url(#bellGrad)"/>
+  
+  <!-- Bell clapper -->
+  <circle cx="512" cy="670" r="30" fill="#ff8f00"/>
+  
+  <!-- Bell top knob -->
+  <circle cx="512" cy="290" r="20" fill="#ffd54f"/>
+  
+  <!-- Bell shine highlight -->
+  <path d="M 450 360 
+           Q 460 340, 490 330 
+           Q 480 380, 455 400 Z" 
+        fill="white" opacity="0.3"/>
+  
+  <!-- Notification badge -->
+  <circle cx="620" cy="330" r="55" fill="#ef5350"/>
+  <circle cx="620" cy="330" r="45" fill="#f44336"/>
+  
+  <!-- Badge dot (pulsing indicator) -->
+  <circle cx="620" cy="330" r="20" fill="white"/>
+</svg>
