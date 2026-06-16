@@ -18,16 +18,16 @@ public class SessionWindow {
         let contentRect = NSRect(x: 0, y: 0, width: 360, height: 400)
         panel = NSPanel(
             contentRect: contentRect,
-            styleMask: [.titled, .closable, .resizable, .nonactivatingPanel, .utilityWindow],
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
         
         panel.title = "Copilot Sessions"
-        panel.level = .floating
-        panel.isFloatingPanel = true
+        panel.level = .normal
+        panel.isFloatingPanel = false
         panel.hidesOnDeactivate = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.fullScreenAuxiliary]
         panel.isReleasedWhenClosed = false
         panel.setFrameAutosaveName("CopilotNotifySessionWindow")
         panel.minSize = NSSize(width: 300, height: 200)
