@@ -117,6 +117,15 @@ public struct EventParser {
         
         let userTime = lastUserMessage?.timestamp ?? Date.distantPast
         
+        // If a turn started AFTER the last turn ended, agent is currently working
+        if let turnStart = lastTurnStart, let turnEnd = lastTurnEnd {
+            let startTime = turnStart.timestamp ?? Date()
+            let endTime = turnEnd.timestamp ?? Date.distantPast
+            if startTime > endTime {
+                return (.working, startTime)
+            }
+        }
+        
         // If task_complete is the most recent significant event (after last user message)
         if let tc = lastTaskComplete {
             let tcTime = tc.timestamp ?? Date()

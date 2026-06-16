@@ -61,7 +61,7 @@ public struct TmuxMapper {
             
             // If no --session-id flag, try to find session from open session.db file
             if sessionId == nil {
-                sessionId = getSessionIdFromOpenFiles(pid: pid)
+                sessionId = getMostRecentSessionFromOpenFiles(pid: pid)
             }
             
             // Get cwd via lsof
@@ -194,14 +194,52 @@ public struct TmuxMapper {
         return nil
     }
     
-    /// Extract session ID from open session.db files (most reliable method).
-    private static func getSessionIdFromOpenFiles(pid: Int) -> String? {
+    /// Extract session ID from open session.db files.
+    /// If multiple session.db files are open, picks the most recently modified one.
+    private static func getMostRecentSessionFromOpenFiles(pid: Int) -> String? {
         let output = shell("lsof -a -p \(pid) -Fn 2>/dev/null | grep 'session-state/.*/session.db'")
-        // Expected: n/Users/.../.copilot/session-state/<uuid>/session.db
+        var candidates: [String] = []
+        
         for line in output.components(separatedBy: .newlines) {
             guard line.contains("session-state/") else { continue }
             let cleaned = line.hasPrefix("n") ? String(line.dropFirst(1)) : line
-            // Extract UUID between session-state/ and /session.db
+            if let stateRange = cleaned.range(of: "session-state/"),
+               let dbRange = cleaned.range(of: "/session.db") {
+                let sessionId = String(cleaned[stateRange.upperBound..<dbRange.lowerBound])
+                if !sessionId.isEmpty {
+                    candidates.append(sessionId)
+                }
+            }
+        }
+        
+        guard !candidates.isEmpty else { return nil }
+        if candidates.count == 1 { return candidates[0] }
+        
+        // Multiple sessions — pick the one with the most recently modified events.jsonl
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let fm = FileManager.default
+        var best: String? = nil
+        var bestDate = Date.distantPast
+        
+        for sessionId in candidates {
+            let eventsPath = "\(home)/.copilot/session-state/\(sessionId)/events.jsonl"
+            if let attrs = try? fm.attributesOfItem(atPath: eventsPath),
+               let modDate = attrs[.modificationDate] as? Date,
+               modDate > bestDate {
+                bestDate = modDate
+                best = sessionId
+            }
+        }
+        
+        return best ?? candidates[0]
+    }
+    
+    /// Extract session ID from open session.db files (returns first match — used by findPaneForSession).
+    private static func getSessionIdFromOpenFiles(pid: Int) -> String? {
+        let output = shell("lsof -a -p \(pid) -Fn 2>/dev/null | grep 'session-state/.*/session.db'")
+        for line in output.components(separatedBy: .newlines) {
+            guard line.contains("session-state/") else { continue }
+            let cleaned = line.hasPrefix("n") ? String(line.dropFirst(1)) : line
             if let stateRange = cleaned.range(of: "session-state/"),
                let dbRange = cleaned.range(of: "/session.db") {
                 let sessionId = String(cleaned[stateRange.upperBound..<dbRange.lowerBound])

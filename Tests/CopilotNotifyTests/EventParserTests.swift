@@ -290,6 +290,26 @@ struct EventParserTests {
         #expect(result?.type == .completion)
     }
     
+    @Test("Turn start after turn end means working")
+    func turnStartAfterTurnEndIsWorking() {
+        let t1 = date("2026-06-11T10:00:00Z")
+        let t2 = date("2026-06-11T10:01:00Z")
+        let t3 = date("2026-06-11T10:01:01Z")
+        let t4 = date("2026-06-11T10:01:02Z")
+        let t5 = date("2026-06-11T10:01:03Z")
+        
+        let events: [EventParser.Event] = [
+            .init(type: "user.message", timestamp: t1),
+            .init(type: "assistant.message", timestamp: t2, data: ["content": "Done"]),
+            .init(type: "assistant.turn_end", timestamp: t3),
+            .init(type: "user.message", timestamp: t4),
+            .init(type: "assistant.turn_start", timestamp: t5),
+        ]
+        
+        let result = EventParser.detectState(events: events)
+        #expect(result?.type == .working)
+    }
+    
     // MARK: - Helpers
     
     private func date(_ iso: String) -> Date {
