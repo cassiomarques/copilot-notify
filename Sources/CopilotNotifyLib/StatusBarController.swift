@@ -1,19 +1,24 @@
 import AppKit
 import SwiftUI
 
-/// Manages the NSStatusItem (menu bar icon) and its popover.
+/// Manages the NSStatusItem (menu bar icon) and toggles the session window.
 public class StatusBarController: NSObject {
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
-    private var alerts: [SessionAlert] = []
+    private let sessionWindow: SessionWindow
     
-    public var onAlertSelected: ((SessionAlert) -> Void)?
-    public var onAlertDismissed: ((SessionAlert) -> Void)?
+    public var onAlertSelected: ((SessionAlert) -> Void)? {
+        get { sessionWindow.onAlertSelected }
+        set { sessionWindow.onAlertSelected = newValue }
+    }
+    public var onAlertDismissed: ((SessionAlert) -> Void)? {
+        get { sessionWindow.onAlertDismissed }
+        set { sessionWindow.onAlertDismissed = newValue }
+    }
     
     public override init() {
+        self.sessionWindow = SessionWindow()
         super.init()
         setupStatusItem()
-        setupPopover()
     }
     
     private func setupStatusItem() {
@@ -43,9 +48,9 @@ public class StatusBarController: NSObject {
         if event.type == .rightMouseUp {
             statusItem.menu = rightClickMenu
             statusItem.button?.performClick(nil)
-            statusItem.menu = nil  // Reset so left click works normally next time
+            statusItem.menu = nil
         } else {
-            togglePopover()
+            sessionWindow.toggle()
         }
     }
     
@@ -53,34 +58,11 @@ public class StatusBarController: NSObject {
         NSApp.terminate(nil)
     }
     
-    private func setupPopover() {
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 340, height: 300)
-        popover.behavior = .transient
-        popover.animates = true
-        updatePopoverContent()
-    }
-    
-    @objc private func togglePopover() {
-        guard let button = statusItem.button else { return }
-        
-        if popover.isShown {
-            popover.performClose(nil)
-        } else {
-            updatePopoverContent()
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
-        }
-    }
-    
     /// Update the displayed alerts and refresh the UI.
     public func update(alerts: [SessionAlert]) {
-        self.alerts = alerts
         let needsAttention = alerts.filter { $0.alertType == .question || $0.alertType == .approval }.count
         updateIcon(count: needsAttention)
-        if popover.isShown {
-            updatePopoverContent()
-        }
+        sessionWindow.update(alerts: alerts)
     }
     
     private func updateIcon(count: Int) {
@@ -96,19 +78,5 @@ public class StatusBarController: NSObject {
         
         button.image?.size = NSSize(width: 18, height: 18)
         button.image?.isTemplate = true
-    }
-    
-    private func updatePopoverContent() {
-        let view = SessionListView(
-            alerts: alerts,
-            onSelect: { [weak self] alert in
-                self?.popover.performClose(nil)
-                self?.onAlertSelected?(alert)
-            },
-            onDismiss: { [weak self] alert in
-                self?.onAlertDismissed?(alert)
-            }
-        )
-        popover.contentViewController = NSHostingController(rootView: view)
     }
 }

@@ -39,7 +39,7 @@ public struct SessionListView: View {
                 .frame(maxHeight: 400)
             }
         }
-        .frame(width: 340)
+        .frame(minWidth: 300, maxWidth: .infinity)
     }
     
     /// Sort: needs-attention items first (by recency), then working items.
