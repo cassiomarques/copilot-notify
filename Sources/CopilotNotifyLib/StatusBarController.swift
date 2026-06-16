@@ -58,6 +58,11 @@ public class StatusBarController: NSObject {
         NSApp.terminate(nil)
     }
     
+    /// Show the session window.
+    public func showWindow() {
+        sessionWindow.show()
+    }
+    
     /// Update the displayed alerts and refresh the UI.
     public func update(alerts: [SessionAlert]) {
         let needsAttention = alerts.filter { $0.alertType == .question || $0.alertType == .approval }.count

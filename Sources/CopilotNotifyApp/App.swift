@@ -9,7 +9,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var notificationManager: NotificationManager!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Hide dock icon (pure menu bar app)
+        // Regular app so windows work normally, but hide dock icon
         NSApp.setActivationPolicy(.accessory)
         
         // Setup components
@@ -17,6 +17,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         sessionMonitor = SessionMonitor(pollInterval: 3.0)
         notificationManager = NotificationManager()
         notificationManager.setup()
+        
+        // Show the session window on launch
+        statusBar.showWindow()
         
         // Wire up: monitor → status bar + notifications
         sessionMonitor.onAlertsChanged = { [weak self] alerts in

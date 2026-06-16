@@ -43,7 +43,8 @@ public class SessionWindow {
         if panel.isVisible {
             panel.orderOut(nil)
         } else {
-            panel.orderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
             // If no saved position, center on screen
             if !panel.frameAutosaveName.isEmpty,
                UserDefaults.standard.string(forKey: "NSWindow Frame \(panel.frameAutosaveName)") == nil {
@@ -54,7 +55,8 @@ public class SessionWindow {
     
     /// Show the window.
     public func show() {
-        panel.orderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
     }
     
     /// Update the displayed alerts.
