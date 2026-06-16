@@ -33,14 +33,25 @@ public struct TmuxNavigator {
     
     /// Kill the copilot process for a session.
     public static func killSession(alert: SessionAlert) -> Bool {
-        // Find the PID of the copilot process for this session
         guard let pid = findPidForSession(alert: alert) else {
             print("[CopilotNotify] No PID found to kill for session \(alert.id)")
             return false
         }
         
         print("[CopilotNotify] Killing copilot process \(pid) for session \(alert.id)")
-        let _ = shell("kill \(pid) 2>/dev/null")
+        // Kill the process group to also terminate child processes
+        let result = shell("kill -TERM -\(pid) 2>/dev/null; kill -TERM \(pid) 2>/dev/null")
+        print("[CopilotNotify] Kill result: \(result)")
+        
+        // Give it a moment, then force kill if still alive
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2.0) {
+            let check = Self.shell("ps -p \(pid) -o pid= 2>/dev/null")
+            if !check.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                print("[CopilotNotify] Process \(pid) still alive, sending SIGKILL")
+                let _ = Self.shell("kill -9 \(pid) 2>/dev/null")
+            }
+        }
+        
         return true
     }
     
